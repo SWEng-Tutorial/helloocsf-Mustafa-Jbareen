@@ -6,6 +6,8 @@ import il.cshaifasweng.OCSFMediatorExample.server.ocsf.ConnectionToClient;
 import il.cshaifasweng.OCSFMediatorExample.server.ocsf.SubscribedClient;
 
 import java.io.IOException;
+import java.io.PrintStream;
+import java.time.LocalTime;
 import java.util.ArrayList;
 
 public class SimpleServer extends AbstractServer {
@@ -32,7 +34,7 @@ public class SimpleServer extends AbstractServer {
 			//message format: "change submitters IDs: 123456789, 987654321"
 			else if(request.startsWith("change submitters IDs:")){
 				message.setData(request.substring(23));
-				message.setMessage("update submitters IDs");
+				message.setMessage(request.substring(23));
 				sendToAllClients(message);
 			}
 			//we got a request to add a new client as a subscriber.
@@ -49,17 +51,59 @@ public class SimpleServer extends AbstractServer {
 			}
 			else if(request.startsWith("send Submitters IDs")){
 				//add code here to send submitters IDs to client
+				message.setMessage("212955587, 213011026");
+				client.sendToClient(message);
 			}
 			else if (request.startsWith("send Submitters")){
 				//add code here to send submitters names to client
+				message.setMessage("Mostufa-Jbareen, Mohamad-Hijazi");
+				client.sendToClient(message);
 			}
 			else if (request.equals("what’s the time?")) {
 				//add code here to send the time to client
+				LocalTime time =  LocalTime.now();
+				message.setMessage(time.toString().substring(0,8));
+				client.sendToClient(message);
 			}
 			else if (request.startsWith("multiply")){
 				//add code here to multiply 2 numbers received in the message and send result back to client
 				//(use substring method as shown above)
 				//message format: "multiply n*m"
+				boolean error_flag = false;
+				int i;
+				for (i = 0 ; i<request.length(); i++)
+				{
+					if (request.charAt(i) == '*')
+					{
+						break;
+					}
+				}
+				int j;
+				for (j = 9 ; j < request.length() ; j++)
+				{
+					if (i == j)
+					{
+						continue;
+					}
+					if (request.charAt(j) >'9' || request.charAt(j) < '0')
+					{
+						error_flag = true;
+					}
+				}
+
+				if(error_flag)
+				{
+					message.setMessage(request);
+					sendToAllClients(message);
+				}
+				else {
+					int first = Integer.parseInt(request.substring(9, i));
+					int second = Integer.parseInt(request.substring(i + 1));
+					int result = first * second;
+
+					message.setMessage(Integer.toString(result));
+					client.sendToClient(message);
+				}
 			}else{
 				//add code here to send received message to all clients.
 				//The string we received in the message is the message we will send back to all clients subscribed.
@@ -67,6 +111,8 @@ public class SimpleServer extends AbstractServer {
 					// message received: "Good morning"
 					// message sent: "Good morning"
 				//see code for changing submitters IDs for help
+				message.setMessage(request);
+				sendToAllClients(message);
 			}
 		} catch (IOException e1) {
 			e1.printStackTrace();
